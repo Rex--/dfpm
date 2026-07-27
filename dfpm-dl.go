@@ -12,15 +12,15 @@ import (
 
 var DownloadURL = "https://packs.download.microchip.com/"
 
-func InstallPack(pack_name string) (err error) {
+func InstallPack(pack_name, install_dir string) (err error) {
 	pack_file, err := DownloadPack(pack_name)
 	if err != nil {
 		return
 	}
 
-	pack_install, _ := filepath.Abs(filepath.Join(InstallDir, strings.TrimSuffix(pack_name, ".atpack")))
-	println("install path:", pack_install)
+	pack_install, _ := filepath.Abs(filepath.Join(install_dir, strings.TrimSuffix(pack_name, ".atpack")))
 
+	fmt.Println("unpacking", pack_name)
 	err = Unzip(pack_file, pack_install)
 	if err != nil {
 		return
@@ -31,6 +31,8 @@ func InstallPack(pack_name string) (err error) {
 	if err != nil {
 		return
 	}
+
+	fmt.Println("installed", pack_install)
 
 	return
 }
@@ -57,7 +59,8 @@ func DownloadPack(pack_name string) (pack_file string, err error) {
 	// 	return
 	// }
 	defer file.Close()
-	println(url, "->", file.Name())
+	// println(url, "->", file.Name())
+	fmt.Println("downloading", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
