@@ -34,6 +34,8 @@ func InitCLI() {
 
 	flag.Usage = usage
 
+	flag.BoolFunc("version", "", version)
+
 	flag.StringVar(&args.PackDir, "pack-dir", defaultPackDir, usagePackDir)
 	flag.StringVar(&args.PackDir, "p", defaultPackDir, usagePackDir+sh)
 
@@ -74,10 +76,18 @@ Usage:
 
 Options:
   -p <path>, --pack-dir <path>  specify pack directory to use [default: ~/.mchp_packs]
-  -d, --download                automatically download packs`)
+  -d, --download                automatically download packs
+  -h, --help                    print help and exit
+  --version                     print version and exit`)
 }
 
 func usageErr() {
 	usage()
 	os.Exit(1)
+}
+
+func version(flag string) error {
+	fmt.Printf("dfpm - Device Family Pack Manager v%s\nCopyright (c) %s Rex McKinnon\n", Dfpm_Version, Dfpm_Year)
+	os.Exit(0)
+	return nil
 }

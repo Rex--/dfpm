@@ -1,5 +1,8 @@
 package main
 
+var Dfpm_Version = "1.0"
+var Dfpm_Year = "2026"
+
 func init() {
 	InitCLI()
 }
