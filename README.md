@@ -19,6 +19,8 @@ Usage:
 Options:
   -p <path>, --pack-dir <path>  specify pack directory to use [default: ~/.mchp_packs]
   -d, --download                automatically download packs
+  -h, --help                    print help and exit
+  --version                     print version and exit
 ```
 
 
