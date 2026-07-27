@@ -64,16 +64,17 @@ func ParseCLI() DFPMArgs {
 }
 
 func usage() {
-	fmt.Println(`usage: dfpm [-p <pack_dir>] [install | list | search] [arg]`)
-	flag.PrintDefaults()
-	fmt.Println(`
-  dfpm install <pack>      install the given device pack
-  dfpm list                list installed device packs
-  dfpm search <string>     search for <string> in pack descriptions
+	fmt.Println(`dfpm - Device Family Pack Manager
 
-  dfpm xc8 [-mcpu=<cpuid>] [args ...]
-                           search for the given <cpuid> in pack descriptions
-                           if found, launch 'xc8-cc' with the -mdfp option`)
+Usage:
+  dfpm [-p <path>] install <pack>
+  dfpm [-p <path>] list
+  dfpm [-p <path>] search [-d] <string>
+  dfpm [-p <path>] xc8 [-mcpu=<cpu_id>] [<argument>...]
+
+Options:
+  -p <path>, --pack-dir <path>  specify pack directory to use [default: ~/.mchp_packs]
+  -d, --download                automatically download packs`)
 }
 
 func usageErr() {
