@@ -76,18 +76,18 @@ func Dfpm_search(args DFPMArgs) {
 			var resp string
 			fmt.Scanln(&resp)
 
-			if resp == "" || strings.HasPrefix(strings.ToLower(resp), "y") {
-				for _, p := range packs_2dl {
-					err := InstallPack(p, args.PackDir)
-					if err != nil {
-						fmt.Println(err.Error())
-						return
-					}
-				}
+			if !(resp == "" || strings.HasPrefix(strings.ToLower(resp), "y")) {
+				return
+			}
+		}
+		for _, p := range packs_2dl {
+			err := InstallPack(p, args.PackDir)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
 			}
 		}
 	}
-
 }
 
 func dfpm_update() {
