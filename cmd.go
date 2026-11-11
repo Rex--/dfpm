@@ -169,13 +169,6 @@ func Dfpm_search(packDir string, term string, download bool, yes bool, local boo
 }
 
 func Dfpm_update(packDir string, name string, show bool, keepPacks bool) error {
-
-	normName, err := NormalizePackName(name)
-	if err != nil {
-		return err
-	}
-	nameParts := strings.SplitN(normName, ".", 3)
-
 	localPacks, err := FindLocal(packDir)
 	if err != nil {
 		return err
@@ -189,11 +182,13 @@ func Dfpm_update(packDir string, name string, show bool, keepPacks bool) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 1, 1, ' ', 0)
 
 	if name == "" { // Update all packs if not specified
+		upToDate := true
 		for _, pack := range localPacks {
 			for _, wpack := range webPacks {
 				if pack.Name == wpack.Name && pack.Version != wpack.Version {
 					// We decide if its out of date by checking if its different. Hopefully microchip doesn't release an older pack than what we have installed.
-					fmt.Fprintf(w, "%s\tv%s -> %s\n", pack.Name, pack.Version, wpack.Version)
+					upToDate = false
+					fmt.Fprintf(w, "%s\tv%s ->\t%s\n", pack.Name, pack.Version, wpack.Version)
 					if !show {
 						w.Flush()
 						packName := strings.Join([]string{"Microchip", pack.Name, wpack.Version, "atpack"}, ".")
@@ -206,16 +201,26 @@ func Dfpm_update(packDir string, name string, show bool, keepPacks bool) error {
 							}
 						}
 					}
+				} else if show && pack.Name == wpack.Name {
+					fmt.Fprintf(w, "%s\tv%s\tlatest\n", pack.Name, pack.Version)
 				}
 			}
 		}
+		if !show && upToDate {
+			fmt.Fprintln(w, "All packs up to date.")
+		}
 	} else { // Update specific pack
+		normName, err := NormalizePackName(name)
+		if err != nil {
+			return err
+		}
+		nameParts := strings.SplitN(normName, ".", 3)
 		for _, pack := range localPacks {
 			if pack.Name == nameParts[1] {
 				for _, wpack := range webPacks {
 					if pack.Name == wpack.Name && pack.Version != wpack.Version {
 						// We decide if its out of date by checking if its different. Hopefully microchip doesn't release an older pack than what we have installed.
-						fmt.Fprintf(w, "%s\tv%s -> %s\n", pack.Name, pack.Version, wpack.Version)
+						fmt.Fprintf(w, "%s\tv%s ->\t%s\n", pack.Name, pack.Version, wpack.Version)
 						if !show {
 							w.Flush()
 							// NOTE: use version from normalized name here. If not specified it will be the latest, else we can up(or down)grade to a specific version
@@ -229,6 +234,8 @@ func Dfpm_update(packDir string, name string, show bool, keepPacks bool) error {
 								}
 							}
 						}
+					} else if pack.Name == wpack.Name {
+						fmt.Fprintf(w, "%s\tv%s\tlatest\n", pack.Name, pack.Version)
 					}
 				}
 			}

@@ -8,7 +8,7 @@ import (
 	"github.com/integrii/flaggy"
 )
 
-var Dfpm_Version = "1.1.0"
+var Dfpm_Version = "1.1.1"
 
 // Subcommand vars
 var (
