@@ -8,7 +8,7 @@ import (
 	"github.com/integrii/flaggy"
 )
 
-var Dfpm_Version = "1.1.1"
+var Dfpm_Version = "1.1.2-dev"
 
 // Subcommand vars
 var (
@@ -78,9 +78,8 @@ func init() {
 
 	cmdXc8 = flaggy.NewSubcommand("xc8")
 	cmdXc8.Description = "Launch xc8-cc with -mdfp argument based on -mcpu."
-	cmdXc8.AdditionalHelpPrepend = "If device is in multiple packs the command will fail."
-	cmdXc8.AdditionalHelpPrepend += "\nPack will be automatically installed if not available."
-	cmdXc8.AdditionalHelpAppend = "Additonal help append"
+	cmdXc8.AdditionalHelpAppend = "If device is found in multiple packs the command will fail."
+	cmdXc8.Bool(&downloadPacks, "d", "download", "Automatically download pack.")
 
 	flaggy.AttachSubcommand(cmdInstall, 1)
 	flaggy.AttachSubcommand(cmdRemove, 1)
@@ -90,8 +89,8 @@ func init() {
 	flaggy.AttachSubcommand(cmdXc8, 1)
 
 	if len(os.Args) > 1 {
-		// Loop through the first 3 arguments and check if the xc8 command is used
-		for _, arg := range os.Args[1:min(4, len(os.Args)-1)] {
+		// Loop through the arguments and check if the xc8 command is used
+		for _, arg := range os.Args {
 			if arg == "xc8" {
 				// Disable errors on unexpected arguments
 				flaggy.DefaultParser.ShowHelpOnUnexpected = false
@@ -121,23 +120,17 @@ func main() {
 	} else if cmdXc8.Used {
 		var args []string
 		for i := 1; i < len(os.Args); i++ {
-			if os.Args[i] == "--pack-dir" ||
-				os.Args[i] == "-pack-dir" ||
-				os.Args[i] == "--p" ||
-				os.Args[i] == "-p" {
-				i++ // We dont save the flag, and skip over the next argument too
+			if match, hasArg := matchFlags(append(flaggy.DefaultParser.Flags, cmdXc8.Flags...), os.Args[i]); match {
+				if !hasArg {
+					i++
+				}
 				continue
-			} else if strings.HasPrefix(os.Args[i], "--pack-dir=") ||
-				strings.HasPrefix(os.Args[i], "-pack-dir=") ||
-				strings.HasPrefix(os.Args[i], "--p=") ||
-				strings.HasPrefix(os.Args[i], "-p=") {
-				continue // Don't save this flag
 			} else if os.Args[i] == "xc8" {
-				continue // Don't save the subcommand
+				continue
 			}
 			args = append(args, os.Args[i])
 		}
-		err = Dfpm_xc8(packDir, args)
+		err = Dfpm_xc8(packDir, downloadPacks, args)
 	} else {
 		flaggy.ShowHelp("")
 	}
@@ -146,4 +139,25 @@ func main() {
 		fmt.Printf("error: %s\n", err.Error())
 		os.Exit(1)
 	}
+}
+
+// Return match=true if the flag matches any flag in  `flags`
+// Return hasArg=true if the flag has an argument attached (with  `=`)
+// hasArg is always true with boolean flags, as these do not support a trailing argument (trailing without `=`)
+func matchFlags(flags []*flaggy.Flag, flag string) (match, hasArg bool) {
+	flag = strings.TrimLeft(flag, "-")
+	flag, _, hasArg = strings.Cut(flag, "=")
+
+	for _, arg := range flags {
+		if arg.HasName(flag) {
+			switch arg.AssignmentVar.(type) {
+			case bool:
+				return true, true
+			default:
+				return true, hasArg
+			}
+		}
+	}
+
+	return false, hasArg
 }

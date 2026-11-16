@@ -246,7 +246,7 @@ func Dfpm_update(packDir string, name string, show bool, keepPacks bool) error {
 	return nil
 }
 
-func Dfpm_xc8(packDir string, args []string) error {
+func Dfpm_xc8(packDir string, download bool, args []string) error {
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-mcpu=") {
 			mcpu := strings.TrimPrefix(arg, "-mcpu=")
@@ -268,7 +268,19 @@ func Dfpm_xc8(packDir string, args []string) error {
 					return fmt.Errorf("device %s is in multiple packs", mcpu)
 				}
 
-				fmt.Printf("Found device %s in pack %s, installing...\n", mcpu, packs[0].Name)
+				if !download {
+					fmt.Printf("Device %s found in pack %s, which is not installed.\n", mcpu, packs[0].Name)
+					fmt.Print("Install pack now? [Y/n]: ")
+
+					var resp string
+					fmt.Scanln(&resp)
+
+					if !(resp == "" || strings.HasPrefix(strings.ToLower(resp), "y")) {
+						return fmt.Errorf("pack %s not installed", packs[0].Name)
+					}
+				} else {
+					fmt.Printf("Found device %s in pack %s, installing...\n", mcpu, packs[0].Name)
+				}
 
 				// Install pack
 				packName := strings.Join([]string{"Microchip", packs[0].Name, packs[0].Version, "atpack"}, ".")
